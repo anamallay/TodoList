@@ -1,23 +1,39 @@
-import logo from './logo.svg';
-import './App.css';
+import TodoList from "./components/TodoList.js";
+import * as React from "react";
+import { v4 as uuidv4 } from "uuid";
+
+import { useState } from "react";
+import { TodoContext } from "./contexts/todoContext.js";
+let initialtodo = [
+  {
+    id: uuidv4(),
+    title: "title 1 tasks",
+    body: "body 1 tasks",
+    isCompleted: false,
+  },
+  {
+    id: uuidv4(),
+    title: "title 2 tasks",
+    body: "body 2 tasks",
+    isCompleted: false,
+  },
+];
+
 
 function App() {
+  const [todo, setTodo] = useState(initialtodo);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#191b1f",
+        height: "100vh",
+      }}>
+      <TodoContext.Provider value={{ todo, setTodo }}>
+        <TodoList />
+      </TodoContext.Provider>
     </div>
   );
 }
