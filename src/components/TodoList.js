@@ -43,7 +43,7 @@ function TodoList() {
   useEffect(() => {
     let storageTodos = JSON.parse(localStorage.getItem("todo"));
     setTodo(storageTodos);
-  }, []);
+  });
   function handleAddClick() {
     let newTasks = {
       id: uuidv4(),
