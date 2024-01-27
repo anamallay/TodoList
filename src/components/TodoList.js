@@ -41,14 +41,14 @@ function TodoList() {
     );
   });
   useEffect(() => {
-    let storageTodos = JSON.parse(localStorage.getItem("todo"));
+    let storageTodos = JSON.parse(localStorage.getItem("todo")) ?? [];
     setTodo(storageTodos);
   });
   function handleAddClick() {
     let newTasks = {
       id: uuidv4(),
       title: titleInput,
-      body: "no body",
+      body: "",
       isCompleted: false,
     };
     const updateTodos = [...todo, newTasks];
