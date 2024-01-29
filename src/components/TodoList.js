@@ -6,25 +6,38 @@ import Divider from "@mui/material/Divider";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import CardContent from "@mui/material/CardContent";
-import Todo from "./Todo";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { v4 as uuidv4 } from "uuid";
-import { useContext, useState, useEffect } from "react";
-import { TodoContext } from "../contexts/todoContext";
+// other
+import Todo from "./Todo";
+import {  useState, useEffect, useMemo } from "react";
+import { useTodos } from "../contexts/todoContext";
+import { useToaster } from "../contexts/toasterContext";
+
 
 function TodoList() {
-  const { todo, setTodo } = useContext(TodoContext);
+  const { showHideToast } = useToaster();
+  const { todo, dispatch } = useTodos();
   const [displayTodosTypes, setDisplayTodosTypes] = React.useState("all");
   const [titleInput, setTitleInput] = useState();
 
-  const isCompleted = todo.filter((t) => {
-    return t.isCompleted;
-  });
-  const noIsCompleted = todo.filter((t) => {
-    return !t.isCompleted;
-  });
+  const isCompleted = useMemo(() => {
+    return todo.filter((t) => {
+      return t.isCompleted;
+    });
+
+  }, [todo]);
+  const noIsCompleted = useMemo(() => {
+    return todo.filter((t) => {
+      return !t.isCompleted;
+    });
+  }, [todo]);
 
   let TodosToBeRendered = todo;
 
@@ -33,37 +46,159 @@ function TodoList() {
   } else if (displayTodosTypes === "notdone") {
     TodosToBeRendered = noIsCompleted;
   }
-  let todoDisplay = TodosToBeRendered.map((t) => {
-    return (
-      <>
-        <Todo key={t.id} Singletodo={t} />
-      </>
-    );
-  });
+
   useEffect(() => {
-    let storageTodos = JSON.parse(localStorage.getItem("todo")) ?? [];
-    setTodo(storageTodos);
+    dispatch({ type: "get" });
   });
+
   function handleAddClick() {
-    let newTasks = {
-      id: uuidv4(),
-      title: titleInput,
-      body: "",
-      isCompleted: false,
-    };
-    const updateTodos = [...todo, newTasks];
-    setTodo(updateTodos);
-    localStorage.setItem("todo", JSON.stringify(updateTodos));
+    dispatch({
+      type: "add",
+      payload: {
+        title: titleInput,
+      },
+    });
     setTitleInput("");
+    showHideToast("Task added successfully");
   }
   // change Types Todods
-
   const handleChangeDisplayTodosTypes = (e) => {
     setDisplayTodosTypes(e.target.value);
   };
+  // +Delete+
+  const [todoIdForDelete, settodoIdForDelete] = useState(null);
+  const [openDelete, setOpenDelete] = React.useState(false);
+  const OpenDelete = (id) => {
+    settodoIdForDelete(id);
+    setOpenDelete(true);
+  };
 
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
+  };
+  function handleDeleteConfirm() {
+    dispatch({
+      type: "delete",
+      payload: {
+        id: todoIdForDelete,
+      },
+    });
+    setOpenDelete(false);
+    showHideToast("delete the tasks successfully");
+  }
+  // -Delete-
+  // +Edit+
+  const [openEdit, setOpenEdit] = React.useState(false);
+  const [todoIdForEdit, setTodoIdForEdit] = useState(null);
+  const [Edit, setEdit] = React.useState({
+    title: "",
+    body: "",
+  });
+
+  const OpenEdit = (todo) => {
+    setTodoIdForEdit(todo.id);
+    setEdit({
+      title: todo.title,
+      body: todo.body,
+    });
+    setOpenEdit(true);
+  };
+
+  const handleEditClose = () => {
+    setOpenEdit(false);
+  };
+
+  function handleEditConfirm() {
+    dispatch({
+      type: "update",
+      payload: {
+        id: todoIdForEdit,
+        titleEdit: Edit,
+      },
+    });
+    setOpenEdit(false);
+    showHideToast("Update the tasks successfully");
+  }
+  // -Edit-
+  let todoDisplay = TodosToBeRendered.map((t) => {
+    return (
+      <>
+        <Todo
+          key={t.id}
+          Singletodo={t}
+          showDelete={OpenDelete}
+          showEdit={OpenEdit}
+        />
+      </>
+    );
+  });
   return (
     <>
+      {/* +Delete Model+ */}
+      <Dialog
+        open={openDelete}
+        onClose={handleCloseDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description">
+        <DialogTitle id="alert-dialog-title">{"Delete Tasks"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete the tasks? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} autoFocus>
+            Confirm Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* -Delete Model- */}
+      {/* +Edit Model+ */}
+      <Dialog open={openEdit} onClose={handleEditClose}>
+        <DialogTitle>Edit Task</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Modify the details of the task below:
+          </DialogContentText>
+          <TextField
+            autoFocus
+            required
+            margin="dense"
+            id="name"
+            name="taskName"
+            label="Task Name"
+            type="text"
+            fullWidth
+            variant="standard"
+            value={Edit.title}
+            onChange={(e) => {
+              setEdit({ ...Edit, title: e.target.value });
+            }}
+          />
+          <TextField
+            margin="dense"
+            id="body"
+            name="taskBody"
+            label="Task Body"
+            type="text"
+            fullWidth
+            variant="standard"
+            value={Edit.body}
+            onChange={(e) => {
+              setEdit({ ...Edit, body: e.target.value });
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditClose}>Cancel</Button>
+          <Button type="submit" onClick={handleEditConfirm}>
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* -Edit Model- */}
       <Container maxWidth="sm">
         <Card
           sx={{
