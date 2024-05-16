@@ -13,7 +13,7 @@ import { useTodos } from "../contexts/todoContext";
 import { useToaster } from "../contexts/toasterContext";
 
 function Todo({ Singletodo, showDelete, showEdit }) {
-  const { todo, dispatch } = useTodos();
+  const { dispatch } = useTodos();
   const { showHideToast } = useToaster();
 
   function handleCheckClick() {
