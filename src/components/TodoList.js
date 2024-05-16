@@ -16,27 +16,22 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 // other
 import Todo from "./Todo";
-import {  useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTodos } from "../contexts/todoContext";
 import { useToaster } from "../contexts/toasterContext";
-
 
 function TodoList() {
   const { showHideToast } = useToaster();
   const { todo, dispatch } = useTodos();
   const [displayTodosTypes, setDisplayTodosTypes] = React.useState("all");
-  const [titleInput, setTitleInput] = useState();
+  const [titleInput, setTitleInput] = useState("");
 
   const isCompleted = useMemo(() => {
-    return todo.filter((t) => {
-      return t.isCompleted;
-    });
-
+    return todo.filter((t) => t.isCompleted);
   }, [todo]);
+
   const noIsCompleted = useMemo(() => {
-    return todo.filter((t) => {
-      return !t.isCompleted;
-    });
+    return todo.filter((t) => !t.isCompleted);
   }, [todo]);
 
   let TodosToBeRendered = todo;
@@ -49,7 +44,7 @@ function TodoList() {
 
   useEffect(() => {
     dispatch({ type: "get" });
-  });
+  }, [dispatch]);
 
   function handleAddClick() {
     dispatch({
@@ -61,11 +56,11 @@ function TodoList() {
     setTitleInput("");
     showHideToast("Task added successfully");
   }
-  // change Types Todods
+
   const handleChangeDisplayTodosTypes = (e) => {
     setDisplayTodosTypes(e.target.value);
   };
-  // +Delete+
+
   const [todoIdForDelete, settodoIdForDelete] = useState(null);
   const [openDelete, setOpenDelete] = React.useState(false);
   const OpenDelete = (id) => {
@@ -76,6 +71,7 @@ function TodoList() {
   const handleCloseDelete = () => {
     setOpenDelete(false);
   };
+
   function handleDeleteConfirm() {
     dispatch({
       type: "delete",
@@ -84,10 +80,9 @@ function TodoList() {
       },
     });
     setOpenDelete(false);
-    showHideToast("delete the tasks successfully");
+    showHideToast("Deleted the task successfully");
   }
-  // -Delete-
-  // +Edit+
+
   const [openEdit, setOpenEdit] = React.useState(false);
   const [todoIdForEdit, setTodoIdForEdit] = useState(null);
   const [Edit, setEdit] = React.useState({
@@ -117,33 +112,27 @@ function TodoList() {
       },
     });
     setOpenEdit(false);
-    showHideToast("Update the tasks successfully");
+    showHideToast("Updated the task successfully");
   }
-  // -Edit-
-  let todoDisplay = TodosToBeRendered.map((t) => {
-    return (
-      <>
-        <Todo
-          key={t.id}
-          Singletodo={t}
-          showDelete={OpenDelete}
-          showEdit={OpenEdit}
-        />
-      </>
-    );
-  });
+
+  const todoDisplay = TodosToBeRendered.map((t) => (
+    <React.Fragment key={t.id}>
+      <Todo Singletodo={t} showDelete={OpenDelete} showEdit={OpenEdit} />
+    </React.Fragment>
+  ));
+
   return (
     <>
-      {/* +Delete Model+ */}
+      {/* Delete Modal */}
       <Dialog
         open={openDelete}
         onClose={handleCloseDelete}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description">
-        <DialogTitle id="alert-dialog-title">{"Delete Tasks"}</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{"Delete Task"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete the tasks? This action cannot be
+            Are you sure you want to delete the task? This action cannot be
             undone.
           </DialogContentText>
         </DialogContent>
@@ -154,8 +143,7 @@ function TodoList() {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* -Delete Model- */}
-      {/* +Edit Model+ */}
+      {/* Edit Modal */}
       <Dialog open={openEdit} onClose={handleEditClose}>
         <DialogTitle>Edit Task</DialogTitle>
         <DialogContent>
@@ -198,7 +186,6 @@ function TodoList() {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* -Edit Model- */}
       <Container maxWidth="sm">
         <Card
           sx={{
@@ -226,7 +213,7 @@ function TodoList() {
             </ToggleButtonGroup>
           </CardContent>
           {todoDisplay}
-          {/* add tasks */}
+          {/* Add Task */}
           <div
             style={{
               minWidth: "500px",
@@ -245,9 +232,7 @@ function TodoList() {
                 <Button
                   style={{ width: "100%", height: "100%", fontWeight: "500" }}
                   variant="contained"
-                  onClick={() => {
-                    handleAddClick();
-                  }}
+                  onClick={handleAddClick}
                   disabled={!titleInput || titleInput.length === 0}>
                   ADD
                 </Button>
@@ -263,7 +248,7 @@ function TodoList() {
                 <TextField
                   style={{ width: "100%" }}
                   id="outlined-basic"
-                  label="tasks"
+                  label="Task"
                   variant="outlined"
                   value={titleInput}
                   onChange={(e) => {
@@ -278,4 +263,5 @@ function TodoList() {
     </>
   );
 }
+
 export default TodoList;
